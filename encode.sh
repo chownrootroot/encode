@@ -59,7 +59,7 @@ function encrypt(){
 	    strTrimmed=$(echo ${file} | awk -F "/" '{print $NF}')
 	    iFileNo=$(($iFileNo+1))
 	    printf "Encrypting ${file}.."
-	    openssl enc -aes-256-cbc -salt -in "${file}" -out "${strPath}${iFileNo}.aes" -pass file:pass || error
+	    openssl enc -aes-256-cbc -salt -pbkdf2 -in "${file}" -out "${strPath}${iFileNo}.aes" -pass file:pass || error
 	    printf "%s;%s\n" ${iFileNo} "${strTrimmed}" >> files 
 	    printf "..done\n"
 	done
@@ -71,7 +71,7 @@ function encrypt(){
 
 	# Encrypt file list
 	printf "Encrypting file list"
-	openssl enc -aes-256-cbc -salt -in files -out ${strPath}_files -pass file:./pass || error
+	openssl enc -aes-256-cbc -salt -pbkdf2 -in files -out ${strPath}_files -pass file:./pass || error
 	printf "..done\n"
 
 	# Delete files
@@ -109,7 +109,7 @@ function decrypt(){
 	
 	# Decrypt file list
 	printf "Decrypting file list...\n"
-	openssl enc -d -aes-256-cbc -in "${strPath}_files" -out files -pass file:./pass || error
+	openssl enc -d -aes-256-cbc -pbkdf2 -in "${strPath}_files" -out files -pass file:./pass || error
 	printf "..done\n"
 	
 	# Decrypt
@@ -117,7 +117,7 @@ function decrypt(){
 		strFileNo=$(echo "${line}" | awk -F ";" '{print $1}')			
 		strFileName=$(echo "${line}" | awk -F ';' '{print $2}')
                 printf "Decrypting ${strFileName}.."
-		openssl enc -d -aes-256-cbc -in "${strPath}${strFileNo}.aes" -out "${strPath}${strFileName}" -pass file:./pass || error
+		openssl enc -d -aes-256-cbc -pbkdf2 -in "${strPath}${strFileNo}.aes" -out "${strPath}${strFileName}" -pass file:./pass || error
 	        printf "..done\n"
        	        #if [ "${strDelete}" = "1" ]; then
 	    	#	rm "${strPath}${strFileNo}.aes"
